@@ -1,0 +1,16 @@
+{
+  "name": "WikiCard 知识盲盒",
+  "short_name": "WikiCard",
+  "description": "打开一包，发现一个世界。以 Wikipedia 为实时知识源的知识卡牌收集游戏。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#11131B",
+  "theme_color": "#11131B",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

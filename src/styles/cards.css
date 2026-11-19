@@ -1,0 +1,400 @@
+/* ===================== 知识卡牌（3:4） ===================== */
+@property --wc-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.wc-card {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease;
+  user-select: none;
+}
+.wc-card.interactive {
+  cursor: pointer;
+}
+.wc-card.interactive:hover {
+  transform: translateY(-4px);
+}
+.wc-card.tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.1s linear;
+}
+
+/*
+ * 注意：cqw 只能在容器（.wc-card / .wc-back）的子元素上使用，
+ * 容器自身的 cqw 会按祖先容器或视口计算，导致边框与卡牌不匹配。
+ * 内圆角 = 外圆角 - 边框宽度，保证稀有度边框均匀且同心。
+ */
+.wc-frame,
+.wc-back-frame {
+  --wc-radius: 5cqw;
+  --wc-border: 2.4cqw;
+}
+.wc-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--wc-radius);
+  padding: var(--wc-border);
+  background: var(--wc-frame);
+  box-shadow: var(--wc-glow);
+}
+
+.wc-inner {
+  position: relative;
+  height: 100%;
+  border-radius: calc(var(--wc-radius) - var(--wc-border));
+  overflow: hidden;
+  background: linear-gradient(180deg, #181b2a 0%, #141724 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.wc-image {
+  position: relative;
+  height: 47%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #0d0f17;
+}
+.wc-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.wc-image::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0 0;
+  background: linear-gradient(180deg, rgba(22, 25, 39, 0), #171a28);
+}
+
+.wc-rarity {
+  position: absolute;
+  top: 3cqw;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 0.8cqw 3.4cqw;
+  border-radius: 99px;
+  font-size: 4cqw;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--wc-color);
+  background: rgba(10, 12, 20, 0.72);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.wc-body {
+  flex: 1;
+  min-height: 0;
+  padding: 1cqw 6cqw 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4cqw;
+  overflow: hidden;
+}
+.wc-title {
+  font-size: 7.4cqw;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #f5f5f7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.wc-en {
+  font-size: 3.4cqw;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #8b90a3;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.wc-cat {
+  font-size: 3.3cqw;
+  font-weight: 700;
+  padding: 0.4cqw 2.6cqw;
+  border-radius: 99px;
+  color: var(--wc-color);
+  background: color-mix(in srgb, var(--wc-color) 18%, transparent);
+}
+.wc-desc {
+  font-size: 3.8cqw;
+  line-height: 1.45;
+  color: #c9ccd6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wc-foot {
+  padding: 1.5cqw 0 3cqw;
+  text-align: center;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 800;
+  font-size: 3cqw;
+  letter-spacing: 0.25em;
+  color: #6d7287;
+  line-height: 1.3;
+}
+.wc-foot small {
+  display: block;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 2.8cqw;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.wc-badge {
+  position: absolute;
+  z-index: 5;
+  font-size: max(10px, 4.2cqw);
+  font-weight: 800;
+  border-radius: 99px;
+  padding: 0.6cqw 2.8cqw;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.wc-badge.count {
+  right: -2cqw;
+  top: -2cqw;
+  background: #f5f5f7;
+  color: #11131b;
+}
+.wc-badge.new {
+  left: -2cqw;
+  top: -2cqw;
+  background: linear-gradient(135deg, #ff5db7, #ffc247);
+  color: #11131b;
+}
+
+/* 未收集（仅见过） */
+.wc-card.unowned .wc-inner {
+  filter: grayscale(0.85) brightness(0.6);
+}
+
+/* ===================== 稀有度 ===================== */
+.r-common {
+  --wc-color: #a5a9b5;
+  --wc-frame: linear-gradient(145deg, #d4d6dc, #8a8e99 55%, #bfc2ca);
+  --wc-glow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.r-rare {
+  --wc-color: #398bff;
+  --wc-frame: linear-gradient(145deg, #8cc0ff, #398bff 45%, #1d4fb8);
+  --wc-glow: 0 0 16px rgba(57, 139, 255, 0.45), 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.r-epic {
+  --wc-color: #b77cff;
+  --wc-frame: linear-gradient(145deg, #d6b0ff, #a45cff 40%, #5a22c9 75%, #c18bff);
+  --wc-glow: 0 0 22px rgba(164, 92, 255, 0.55), 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.r-legendary {
+  --wc-color: #ffc247;
+  --wc-frame: linear-gradient(145deg, #fff3c4, #ffc247 35%, #b97a0c 65%, #ffe08a);
+  --wc-glow: 0 0 28px rgba(255, 194, 71, 0.6), 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.r-mythic {
+  --wc-color: #ff8fd0;
+  --wc-frame: conic-gradient(
+    from var(--wc-angle),
+    #ff5db7,
+    #ffc247,
+    #5cffb0,
+    #33d6e0,
+    #398bff,
+    #a45cff,
+    #ff5db7
+  );
+  --wc-glow: 0 0 32px rgba(255, 93, 183, 0.65), 0 0 60px rgba(57, 139, 255, 0.3), 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.r-mythic .wc-frame {
+  animation: wc-spin 4s linear infinite;
+}
+.r-mythic .wc-rarity {
+  background: linear-gradient(90deg, #ff5db7, #ffc247, #5cffb0, #398bff, #a45cff);
+  color: #11131b;
+}
+
+/* 全息层 */
+.wc-holo {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.55;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 93, 183, 0.45) 32%,
+    rgba(255, 194, 71, 0.4) 42%,
+    rgba(92, 255, 176, 0.4) 52%,
+    rgba(57, 139, 255, 0.45) 62%,
+    transparent 78%
+  );
+  background-size: 260% 260%;
+  background-position: var(--mx, 50%) var(--my, 50%);
+  animation: wc-holo 5s ease-in-out infinite;
+}
+.wc-card.tilt .wc-holo {
+  animation: none;
+}
+/* 传说：金色扫光 */
+.wc-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 236, 170, 0.45) 50%, transparent 65%);
+  background-size: 300% 100%;
+  animation: wc-shine 3.2s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes wc-spin {
+  to {
+    --wc-angle: 360deg;
+  }
+}
+@keyframes wc-holo {
+  0%,
+  100% {
+    background-position: 0% 30%;
+  }
+  50% {
+    background-position: 100% 70%;
+  }
+}
+@keyframes wc-shine {
+  0% {
+    background-position: 120% 0;
+  }
+  60%,
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+/* ===================== 卡牌背面 ===================== */
+.wc-back {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+}
+.wc-back-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--wc-radius);
+  padding: var(--wc-border);
+  background: linear-gradient(145deg, #3a4160, #1c2030 50%, #2b3150);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+.wc-back-inner {
+  position: relative;
+  height: 100%;
+  border-radius: calc(var(--wc-radius) - var(--wc-border));
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, #2a2f55 0%, #151829 55%, #0e1019 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wc-back-logo {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  font-size: 7cqw;
+}
+.wc-back-logo .w {
+  display: block;
+  font-size: 26cqw;
+  line-height: 1;
+  letter-spacing: 0;
+  background: linear-gradient(135deg, #398bff, #a45cff 55%, #ff5db7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6cqw rgba(164, 92, 255, 0.5));
+}
+.wc-back-logo .t {
+  color: #c9ccd6;
+}
+.wc-back-star {
+  position: absolute;
+  width: 1.6cqw;
+  height: 1.6cqw;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 3cqw #fff;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+.wc-back-frame.hint-epic {
+  background: linear-gradient(145deg, #c18bff, #5a22c9);
+  box-shadow: 0 0 24px rgba(164, 92, 255, 0.7);
+}
+.wc-back-frame.hint-legendary {
+  background: linear-gradient(145deg, #fff0b8, #c88a12);
+  box-shadow: 0 0 30px rgba(255, 194, 71, 0.8);
+  animation: hint-pulse 1.2s ease-in-out infinite;
+}
+.wc-back-frame.hint-mythic {
+  background: conic-gradient(from var(--wc-angle), #ff5db7, #ffc247, #5cffb0, #398bff, #a45cff, #ff5db7);
+  box-shadow: 0 0 36px rgba(255, 93, 183, 0.85);
+  animation:
+    wc-spin 2.5s linear infinite,
+    hint-pulse 0.9s ease-in-out infinite;
+}
+
+/* ===================== 翻转 ===================== */
+.flip {
+  perspective: 1200px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  position: relative;
+}
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.flip.flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+.flip.instant .flip-inner {
+  transition: none;
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-front {
+  transform: rotateY(180deg);
+}
+.flip:not(.flipped) {
+  cursor: pointer;
+}
+.flip:not(.flipped):hover .flip-inner {
+  transform: translateY(-6px) rotateZ(-1deg);
+}
